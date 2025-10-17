@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+/* Custom Theme Configuration for Tailwind v4 */
+@theme {
+  /* Custom Color Palette */
+  --color-brand-light: #E5D9F2;
+  --color-brand-light-mid: #CDC1FF;
+  --color-brand-mid: #A594F9;
+  --color-brand-mid-dark: #7371FC;
+  --color-brand-dark: #6366F1;
+  --color-primary: #7371FC;
+  --color-secondary: #A594F9;
+  --color-accent: #CDC1FF;
+
+  /* Custom Animations */
+  --animate-fade-in: fade-in 0.5s ease-in;
+  --animate-slide-up: slide-up 0.5s ease-out;
+  --animate-bounce-slow: bounce 2s infinite;
+}
+
+/* Keyframe Animations */
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Global Styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
