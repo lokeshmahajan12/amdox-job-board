@@ -1,35 +1,70 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { FaBriefcase } from "react-icons/fa";
+// Register.jsx
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function Register() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // --- Handle token or error from Google OAuth redirect ---
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const token = params.get("token");
+    const error = params.get("error");
+
+    if (error === "not_registered") {
+      toast.error("You need to register first before logging in with Google!");
+    }
+
+    if (token) {
+      localStorage.setItem("token", token);
+      toast.success("Google login successful!");
+      setTimeout(() => navigate("/dashboard"), 500); // Delay to show toast
+    }
+  }, [location.search, navigate]);
+
+  // --- Normal Register handler ---
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!agreedToTerms) {
-      alert("Please agree to the terms and privacy policy");
+      toast.warning("Please agree to the terms and privacy policy");
       return;
     }
+
     setIsLoading(true);
-    
-    setTimeout(() => {
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        { name, email, password },
+        { withCredentials: true }
+      );
+
+      toast.success(res.data.message || "Registration successful!");
+      setTimeout(() => navigate("/login"), 500); // Delay navigation
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Registration failed");
+    } finally {
       setIsLoading(false);
-      alert("Registration successful!");
-    }, 1500);
+    }
   };
 
+  // --- Google OAuth signup ---
   const handleGoogleSignup = () => {
-    alert("Google signup coming soon!");
+    window.location.href = "http://localhost:5000/api/auth/google";
   };
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Main Content */}
       <div className="max-w-md mx-auto px-6 py-12">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-light text-gray-900 mb-3">
@@ -37,9 +72,24 @@ export default function Register() {
           </h1>
         </div>
 
-        {/* Registration Form Card */}
         <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Name
+              </label>
+              <input
+                type="text"
+                placeholder="Full Name"
+                className="w-full px-3 py-2 border border-gray-400 rounded focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+
+            {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email
@@ -54,6 +104,7 @@ export default function Register() {
               />
             </div>
 
+            {/* Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Password (6+ characters)
@@ -69,6 +120,7 @@ export default function Register() {
               />
             </div>
 
+            {/* Show Password */}
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -82,6 +134,7 @@ export default function Register() {
               </label>
             </div>
 
+            {/* Terms */}
             <div className="pt-2">
               <p className="text-xs text-gray-600 leading-relaxed mb-3">
                 By clicking Agree & Join or Continue, you agree to the JobPortal{" "}
@@ -89,7 +142,7 @@ export default function Register() {
                 <a href="#" className="text-purple-600 hover:underline">Privacy Policy</a>, and{" "}
                 <a href="#" className="text-purple-600 hover:underline">Cookie Policy</a>.
               </p>
-              
+
               <div className="flex items-start">
                 <input
                   type="checkbox"
@@ -123,6 +176,7 @@ export default function Register() {
             </div>
           </div>
 
+          {/* Google Signup */}
           <button
             onClick={handleGoogleSignup}
             className="w-full flex items-center justify-center py-3 px-4 border border-gray-400 rounded-full hover:bg-gray-50 transition-colors"
@@ -139,55 +193,8 @@ export default function Register() {
 
         <p className="text-center text-sm text-gray-600 mt-6">
           Already on JobPortal?{" "}
-          <Link to="/login" className="text-purple-600 font-semibold hover:underline">
-            Sign in
-          </Link>
+          <Link to="/login" className="text-purple-600 font-semibold hover:underline">Sign in</Link>
         </p>
-
-        {/* Benefits Section */}
-        <div className="mt-12 space-y-6">
-          <h2 className="text-xl font-semibold text-gray-900 text-center mb-6">
-            Join your colleagues, classmates, and friends on JobPortal
-          </h2>
-          
-          <div className="space-y-4">
-            <div className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Find the right job or internship</h3>
-                <p className="text-gray-600 text-sm">Connect with people who can help you land your dream role</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Learn the skills you need to succeed</h3>
-                <p className="text-gray-600 text-sm">Choose from thousands of courses taught by industry experts</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg">
-              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Build and engage with your network</h3>
-                <p className="text-gray-600 text-sm">Grow your professional connections and discover opportunities</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
